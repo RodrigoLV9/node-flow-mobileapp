@@ -1,0 +1,45 @@
+diff --git a/node_modules/react-native-css-interop/.cache/android.js b/node_modules/react-native-css-interop/.cache/android.js
+new file mode 100644
+index 0000000..e69de29
+diff --git a/node_modules/react-native-css-interop/.cache/ios.js b/node_modules/react-native-css-interop/.cache/ios.js
+new file mode 100644
+index 0000000..e69de29
+diff --git a/node_modules/react-native-css-interop/.cache/macos.js b/node_modules/react-native-css-interop/.cache/macos.js
+new file mode 100644
+index 0000000..e69de29
+diff --git a/node_modules/react-native-css-interop/.cache/native.js b/node_modules/react-native-css-interop/.cache/native.js
+new file mode 100644
+index 0000000..e69de29
+diff --git a/node_modules/react-native-css-interop/.cache/windows.js b/node_modules/react-native-css-interop/.cache/windows.js
+new file mode 100644
+index 0000000..e69de29
+diff --git a/node_modules/react-native-css-interop/dist/metro/index.js b/node_modules/react-native-css-interop/dist/metro/index.js
+index 6ea4a69..c14f7e0 100644
+--- a/node_modules/react-native-css-interop/dist/metro/index.js
++++ b/node_modules/react-native-css-interop/dist/metro/index.js
+@@ -149,7 +149,7 @@ function getConfig(config, options) {
+     };
+ }
+ function emitHasteFileChange(filePath, debug) {
+-    (0, assert_1.default)(haste != null);
++    /* (0, assert_1.default)(haste != null);
+     try {
+         const modifiedTime = Date.now();
+         haste.emit("change", {
+@@ -180,7 +180,15 @@ function emitHasteFileChange(filePath, debug) {
+     }
+     catch (error) {
+         debug("virtualStyles.emit failed", error);
+-    }
++    } */
++   haste.emit("change", {
++                changes: {
++                    addedFiles: [],
++                    modifiedFiles: [[filePath, { modifiedTime: Date.now(), size: 1, type: "virtual" }]],
++                    removedFiles: [],
++                },
++                rootDir: "",
++            });
+ }
+ async function startCSSProcessor(filePath, platform, isDev, { input, getCSSForPlatform, ...options }, debug) {
+     if (virtualModules.has(filePath)) {
