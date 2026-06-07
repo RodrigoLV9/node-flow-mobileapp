@@ -1,0 +1,98 @@
+{
+  "preferences": {
+    "focus_time_minutes": 25,
+    "short_break_minutes": 5,
+    "long_break_minutes": 15,
+    "theme": "dark",
+    "strict_block_mode": true
+  },
+  "categories": [
+    {
+      "id": "cat_uni",
+      "name": "Universidad",
+      "color_hex": "#00D4FF"
+    },
+    {
+      "id": "cat_dev",
+      "name": "Desarrollo",
+      "color_hex": "#00FF66"
+    },
+    {
+      "id": "cat_life",
+      "name": "Personal",
+      "color_hex": "#FF3B69"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "tsk_1a2b3c",
+      "title": "Resolver guía de Pensamiento Computacional de UBA XXI",
+      "pyramid_level": 3,
+      "category_id": "cat_uni",
+      "status": "pending",
+      "target_date": "2026-06-06",
+      "completed_at": null
+    },
+    {
+      "id": "tsk_4d5e6f",
+      "title": "Diseñar modelo en MongoDB Atlas para API",
+      "pyramid_level": 4,
+      "category_id": "cat_dev",
+      "status": "completed",
+      "target_date": "2026-06-05",
+      "completed_at": "2026-06-05T14:30:00Z"
+    },
+    {
+      "id": "tsk_7g8h9i",
+      "title": "Repasar apuntes de Bases de Datos en Obsidian",
+      "pyramid_level": 2,
+      "category_id": "cat_uni",
+      "status": "pending",
+      "target_date": "2026-06-07",
+      "completed_at": null
+    },
+    {
+      "id": "tsk_0j1k2l",
+      "title": "Comprar ingredientes para la cena",
+      "pyramid_level": 1,
+      "category_id": "cat_life",
+      "status": "completed",
+      "target_date": "2026-06-05",
+      "completed_at": "2026-06-05T09:15:00Z"
+    }
+  ],
+  "pomodoro_sessions": [
+    {
+      "id": "sess_101",
+      "task_id": "tsk_4d5e6f",
+      "type": "focus",
+      "start_time": "2026-06-05T13:00:00Z",
+      "end_time": "2026-06-05T13:25:00Z",
+      "duration_minutes": 25
+    },
+    {
+      "id": "sess_102",
+      "task_id": "tsk_4d5e6f",
+      "type": "short_break",
+      "start_time": "2026-06-05T13:25:00Z",
+      "end_time": "2026-06-05T13:30:00Z",
+      "duration_minutes": 5
+    },
+    {
+      "id": "sess_103",
+      "task_id": "tsk_4d5e6f",
+      "type": "focus",
+      "start_time": "2026-06-05T13:30:00Z",
+      "end_time": "2026-06-05T13:55:00Z",
+      "duration_minutes": 25
+    },
+    {
+      "id": "sess_104",
+      "task_id": null,
+      "type": "focus",
+      "start_time": "2026-06-05T16:00:00Z",
+      "end_time": "2026-06-05T16:25:00Z",
+      "duration_minutes": 25
+    }
+  ]
+}

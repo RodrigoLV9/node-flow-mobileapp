@@ -1,10 +1,12 @@
-import { View, Text } from "react-native";
+import { View } from "react-native";
+import { StatusBar } from "expo-status-bar";
+import Home from "./src/app/Home";
+
 export default function Main() {
   return (
-    <View>
-      <Text className="text-2xl font-bold text-blue-500">
-        This is the Main component
-      </Text>
+    <View className="flex-1 bg-[#121212]">
+      <Home />
+      <StatusBar style="light" />
     </View>
   );
 }

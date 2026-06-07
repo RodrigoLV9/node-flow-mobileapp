@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.ts",
   "dependencies": {
+    "@expo/vector-icons": "^15.0.2",
     "babel-preset-expo": "^56.0.14",
     "expo": "~56.0.9",
     "expo-status-bar": "~56.0.4",
