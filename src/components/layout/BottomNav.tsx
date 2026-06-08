@@ -1,6 +1,6 @@
 import { View, TouchableOpacity } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
-
+import { Link } from "expo-router";
 export default function BottomNav() {
   return (
     <View className="absolute bottom-6 left-0 right-0 items-center">
@@ -14,7 +14,10 @@ export default function BottomNav() {
           elevation: 10,
         }}
       >
-        <TouchableOpacity className="relative h-12 w-12 items-center justify-center">
+        <Link
+          href="/Home"
+          className="relative h-12 w-12 items-center justify-center"
+        >
           <View
             className="absolute inset-0 rounded-2xl bg-[#00D4FF] opacity-10"
             style={{
@@ -25,12 +28,12 @@ export default function BottomNav() {
             }}
           />
           <Ionicons name="home-outline" size={22} color="#00D4FF" />
-        </TouchableOpacity>
+        </Link>
 
         {/* Timer */}
-        <TouchableOpacity className="h-12 w-12 items-center justify-center">
+        <Link href="/Timer" className="h-12 w-12 items-center justify-center">
           <Ionicons name="timer-outline" size={24} color="#71717A" />
-        </TouchableOpacity>
+        </Link>
 
         {/* Analytics/Chart */}
         <TouchableOpacity className="h-12 w-12 items-center justify-center">

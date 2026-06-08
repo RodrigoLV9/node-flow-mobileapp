@@ -1,15 +1,14 @@
 import { View, ScrollView } from "react-native";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Header from "../components/home/Header";
-import CalendarStrip from "../components/home/CalendarStrip";
-import TaskList from "../components/home/TaskList";
-import Fab from "../components/ui/Fab";
-import BottomNav from "../components/layout/BottomNav";
+import Header from "../../components/home/Header";
+import CalendarStrip from "../../components/home/CalendarStrip";
+import TaskList from "../../components/home/TaskList";
+import Fab from "../../components/ui/Fab";
 
-import appData from "../data/example.json";
-import { Task, Category } from "../types";
+import appData from "../../data/example.json";
+import { Task, Category } from "../../types";
 
 export default function Home() {
   const insets = useSafeAreaInsets();
@@ -58,9 +57,7 @@ export default function Home() {
           onPlay={handlePlay}
         />
       </ScrollView>
-
       <Fab onPress={handleAddTask} />
-      <BottomNav />
     </View>
   );
 }
