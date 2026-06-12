@@ -1,8 +1,15 @@
-import { View, Text } from "react-native";
+import { View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { TimerHeader } from "../../components/pomodoro/TimerHeader";
+import { TimerDisplay } from "../../components/pomodoro/TimerDisplay";
+
 export default function Timer() {
   return (
-    <View className="flex-1 items-center justify-center">
-      <Text className="text-black text-2xl">Pomodoro Timer</Text>
-    </View>
+    <SafeAreaView className="flex-1 bg-[#121212]" edges={["top"]}>
+      <View className="flex-1 px-6">
+        <TimerHeader />
+        <TimerDisplay />
+      </View>
+    </SafeAreaView>
   );
 }
