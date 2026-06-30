@@ -1,27 +1,52 @@
 import { View, Text, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSQLiteContext } from "expo-sqlite";
 import { TimerSettings } from "../../components/settings/TimerSettings";
 import { SystemSettings } from "../../components/settings/SystemSettings";
 import { DataManagement } from "../../components/settings/DataManagement";
-import appData from "../../data/example.json";
+import { getPomodoroConfig, getSettings, setSetting } from "../../db/operations";
 
 export default function Settings() {
-  const [focusTime, setFocusTime] = useState(
-    appData.preferences.focus_time_minutes,
-  );
-  const [shortBreak, setShortBreak] = useState(
-    appData.preferences.short_break_minutes,
-  );
-  const [longBreak, setLongBreak] = useState(
-    appData.preferences.long_break_minutes,
-  );
+  const db = useSQLiteContext();
+
+  const pomodoroConfig = getPomodoroConfig(db);
+  const settings = getSettings(db);
+
+  const [focusTime, setFocusTime] = useState(pomodoroConfig.focusTime);
+  const [shortBreak, setShortBreak] = useState(pomodoroConfig.shortBreak);
+  const [longBreak, setLongBreak] = useState(pomodoroConfig.longBreak);
   const [forceDarkMode, setForceDarkMode] = useState(
-    appData.preferences.theme === "dark",
+    (settings.theme ?? "dark") === "dark",
   );
   const [strictBlockMode, setStrictBlockMode] = useState(
-    appData.preferences.strict_block_mode,
+    (settings.strict_block_mode ?? "true") === "true",
   );
+
+  const handleFocusTimeChange = (value: number) => {
+    setFocusTime(value);
+    setSetting(db, "focus_time_minutes", String(value));
+  };
+
+  const handleShortBreakChange = (value: number) => {
+    setShortBreak(value);
+    setSetting(db, "short_break_minutes", String(value));
+  };
+
+  const handleLongBreakChange = (value: number) => {
+    setLongBreak(value);
+    setSetting(db, "long_break_minutes", String(value));
+  };
+
+  const handleForceDarkModeToggle = (value: boolean) => {
+    setForceDarkMode(value);
+    setSetting(db, "theme", value ? "dark" : "light");
+  };
+
+  const handleStrictBlockModeToggle = (value: boolean) => {
+    setStrictBlockMode(value);
+    setSetting(db, "strict_block_mode", String(value));
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-[#121111]">
@@ -37,16 +62,16 @@ export default function Settings() {
           focusTime={focusTime}
           shortBreak={shortBreak}
           longBreak={longBreak}
-          onFocusTimeChange={setFocusTime}
-          onShortBreakChange={setShortBreak}
-          onLongBreakChange={setLongBreak}
+          onFocusTimeChange={handleFocusTimeChange}
+          onShortBreakChange={handleShortBreakChange}
+          onLongBreakChange={handleLongBreakChange}
         />
 
         <SystemSettings
           forceDarkMode={forceDarkMode}
           strictBlockMode={strictBlockMode}
-          onForceDarkModeToggle={setForceDarkMode}
-          onStrictBlockModeToggle={setStrictBlockMode}
+          onForceDarkModeToggle={handleForceDarkModeToggle}
+          onStrictBlockModeToggle={handleStrictBlockModeToggle}
         />
 
         <DataManagement />

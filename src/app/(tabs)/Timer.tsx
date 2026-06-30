@@ -1,6 +1,7 @@
 import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useSQLiteContext } from "expo-sqlite";
 import { TimerHeader } from "../../components/pomodoro/TimerHeader";
 import { TimerDisplay } from "../../components/pomodoro/TimerDisplay";
 import { CycleIndicator } from "../../components/pomodoro/CycleIndicator";
@@ -11,18 +12,15 @@ import {
   PomodoroConfig,
   FOCUS_SESSIONS_PER_CYCLE,
 } from "../../components/pomodoro/types";
-import appData from "../../data/example.json";
-
-function getConfig(): PomodoroConfig {
-  return {
-    focusTime: appData.preferences.focus_time_minutes,
-    shortBreak: appData.preferences.short_break_minutes,
-    longBreak: appData.preferences.long_break_minutes,
-  };
-}
+import { getPomodoroConfig, addPomodoroSession } from "../../db/operations";
 
 export default function Timer() {
-  const configRef = useRef(getConfig());
+  const db = useSQLiteContext();
+  const dbRef = useRef(db);
+  dbRef.current = db;
+
+  const pomodoroConfig = getPomodoroConfig(db);
+  const configRef = useRef(pomodoroConfig);
   const phasesRef = useRef(buildPhases(configRef.current));
   const phases = phasesRef.current;
 
@@ -70,6 +68,20 @@ export default function Timer() {
 
     if (remaining <= 0) {
       clearInterval_();
+
+      const completedPhase = phases[idx];
+      const phaseDurationMs = getPhaseDuration(completedPhase, configRef.current) * 1000;
+      const actualDuration = Math.round(
+        (accumulatedRef.current + (running ? now - startTsRef.current : 0)) / 60000,
+      );
+
+      if (completedPhase.type === "focus" && actualDuration > 0) {
+        addPomodoroSession(dbRef.current, {
+          type: "focus",
+          startTime: new Date(now - elapsed).toISOString(),
+          durationMinutes: actualDuration,
+        });
+      }
 
       const nextIdx = idx + 1;
       if (nextIdx < phases.length) {

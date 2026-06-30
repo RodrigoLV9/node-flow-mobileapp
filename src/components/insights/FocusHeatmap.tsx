@@ -1,42 +1,82 @@
 import { View, Text } from "react-native";
 
-export function FocusHeatmap() {
-  const months = ["Feb", "Mar", "Apr", "May", "Jun"];
+interface HeatmapEntry {
+  date: string;
+  weight: number;
+}
 
-  // Create a 7x21 grid for mockup
-  const generateGrid = () => {
-    const cols = 21;
-    const rows = 7;
-    const grid = [];
+interface FocusHeatmapProps {
+  data: HeatmapEntry[];
+  maxWeight: number;
+}
 
-    for (let r = 0; r < rows; r++) {
-      const rowProps = [];
-      for (let c = 0; c < cols; c++) {
-        // Randomly assign a color intensity
-        const rand = Math.random();
-        let colorClass = "bg-white/5"; // empty
-        if (rand > 0.8)
-          colorClass = "bg-green-400"; // high
-        else if (rand > 0.6)
-          colorClass = "bg-green-500/80"; // medium
-        else if (rand > 0.4)
-          colorClass = "bg-green-600/60"; // low
-        else if (rand > 0.2) colorClass = "bg-green-800/40"; // very low
+const MONTHS_SHORT = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
 
-        rowProps.push(
-          <View
-            key={`${r}-${c}`}
-            className={`w-[10px] h-[10px] rounded-sm m-[2px] ${colorClass}`}
-          />,
-        );
-      }
-      grid.push(
-        <View key={`row-${r}`} className="flex-row">
-          {rowProps}
-        </View>,
-      );
+export function FocusHeatmap({ data, maxWeight }: FocusHeatmapProps) {
+  const today = new Date();
+  const cols = 21;
+  const rows = 7;
+
+  const dateMap = new Map<string, number>();
+  data.forEach((d) => dateMap.set(d.date, d.weight));
+
+  const startDate = new Date(today);
+  startDate.setDate(today.getDate() - cols * rows + 1);
+
+  const months: string[] = [];
+  const grid: { day: number; weight: number; date: string }[][] = [];
+
+  let currentDate = new Date(startDate);
+  let currentMonth = -1;
+  let currentRow: { day: number; weight: number; date: string }[] = [];
+  let dayCount = 0;
+
+  while (dayCount < cols * rows) {
+    const dateStr = currentDate.toISOString().slice(0, 10);
+    const weight = dateMap.get(dateStr) ?? 0;
+    const month = currentDate.getMonth();
+
+    if (month !== currentMonth && dateStr >= today.toISOString().slice(0, 10)) {
+      // skip future dates for month labels
+    } else if (month !== currentMonth && dayCount < cols * rows) {
+      currentMonth = month;
     }
-    return grid;
+
+    currentRow.push({
+      day: currentDate.getDate(),
+      weight,
+      date: dateStr,
+    });
+
+    dayCount++;
+    if (currentRow.length === cols) {
+      grid.push(currentRow);
+      currentRow = [];
+    }
+
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  // Collect unique months that appear
+  for (let i = 0; i < Math.min(4, grid.length); i++) {
+    const row = grid[i];
+    if (row && row.length > 0) {
+      const d = new Date(row[0].date + "T00:00:00");
+      const m = MONTHS_SHORT[d.getMonth()];
+      if (!months.includes(m)) months.push(m);
+    }
+  }
+
+  const getColor = (weight: number): string => {
+    if (weight <= 0) return "bg-white/5";
+    const ratio = Math.min(1, weight / (maxWeight || 1));
+    if (ratio > 0.75) return "bg-green-400";
+    if (ratio > 0.5) return "bg-green-500/80";
+    if (ratio > 0.25) return "bg-green-600/60";
+    return "bg-green-800/40";
   };
 
   return (
@@ -46,23 +86,31 @@ export function FocusHeatmap() {
           Focus Heatmap
         </Text>
         <Text className="text-gray-500 text-xs font-semibold tracking-wider">
-          LAST 18 WKS
+          TASK WEIGHT
         </Text>
       </View>
 
-      {/* Months Header */}
       <View className="flex-row justify-between mb-2 px-1">
-        {months.map((month, index) => (
-          <Text key={index} className="text-gray-500 text-[10px]">
-            {month}
+        {months.map((m, i) => (
+          <Text key={i} className="text-gray-500 text-[10px]">
+            {m}
           </Text>
         ))}
       </View>
 
-      {/* Grid */}
-      <View className="flex-col">{generateGrid()}</View>
+      <View className="items-center">
+        {grid.map((row, ri) => (
+          <View key={ri} className="flex-row">
+            {row.map((cell, ci) => (
+              <View
+                key={ci}
+                className={`w-[10px] h-[10px] rounded-sm m-[2px] ${getColor(cell.weight)}`}
+              />
+            ))}
+          </View>
+        ))}
+      </View>
 
-      {/* Legend */}
       <View className="flex-row items-center justify-end mt-4">
         <Text className="text-gray-500 text-[10px] mr-2">Less</Text>
         <View className="flex-row">
