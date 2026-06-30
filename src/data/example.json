@@ -10,17 +10,20 @@
     {
       "id": "cat_uni",
       "name": "Universidad",
-      "color_hex": "#00D4FF"
+      "color_hex": "#00D4FF",
+      "icon": "school-outline"
     },
     {
       "id": "cat_dev",
       "name": "Desarrollo",
-      "color_hex": "#00FF66"
+      "color_hex": "#00FF66",
+      "icon": "code-slash-outline"
     },
     {
       "id": "cat_life",
       "name": "Personal",
-      "color_hex": "#FF3B69"
+      "color_hex": "#FF3B69",
+      "icon": "person-outline"
     }
   ],
   "tasks": [

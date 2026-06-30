@@ -2,6 +2,7 @@ export interface Category {
   id: string;
   name: string;
   color_hex: string;
+  icon: string;
 }
 
 export interface Task {
