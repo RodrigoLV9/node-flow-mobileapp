@@ -7,6 +7,7 @@ interface TaskListProps {
   categories: Category[];
   onToggleStatus: (id: string) => void;
   onPlay: (id: string) => void;
+  onLongPress: (task: Task) => void;
 }
 
 export default function TaskList({
@@ -14,6 +15,7 @@ export default function TaskList({
   categories,
   onToggleStatus,
   onPlay,
+  onLongPress,
 }: TaskListProps) {
   const activeCount = tasks.filter((t) => t.status === "pending").length;
 
@@ -36,6 +38,7 @@ export default function TaskList({
               category={category}
               onToggleStatus={onToggleStatus}
               onPlay={onPlay}
+              onLongPress={onLongPress}
             />
           );
         })}
