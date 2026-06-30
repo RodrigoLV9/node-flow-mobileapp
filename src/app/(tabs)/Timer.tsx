@@ -21,7 +21,8 @@ export default function Timer() {
 
   const pomodoroConfig = getPomodoroConfig(db);
   const configRef = useRef(pomodoroConfig);
-  const phasesRef = useRef(buildPhases(configRef.current));
+  configRef.current = pomodoroConfig;
+  const phasesRef = useRef(buildPhases(pomodoroConfig));
   const phases = phasesRef.current;
 
   const [phaseIndex, setPhaseIndex] = useState(0);

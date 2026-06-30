@@ -15,7 +15,7 @@ export function CycleIndicator({
   const dots = Array.from({ length: FOCUS_SESSIONS_PER_CYCLE });
 
   return (
-    <View className="flex-row items-center justify-center mt-10">
+    <View className="flex-row items-center justify-center mt-4 pb-8">
       {dots.map((_, i) => {
         const isCompleted = i < completedFocus;
         const isCurrent =

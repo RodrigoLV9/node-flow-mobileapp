@@ -3,18 +3,8 @@ import {
   Text,
   PanResponder,
   LayoutChangeEvent,
-  LayoutAnimation,
-  Platform,
-  UIManager,
 } from "react-native";
 import { useRef, useState, useEffect } from "react";
-
-if (
-  Platform.OS === "android" &&
-  UIManager.setLayoutAnimationEnabledExperimental
-) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 const THUMB_SIZE = 18;
 const TRACK_HEIGHT = 4;
@@ -40,6 +30,7 @@ export function TimeSlider({
   onChange,
 }: TimeSliderProps) {
   const containerWidth = useRef(0);
+  const [ready, setReady] = useState(false);
   const [displayValue, setDisplayValue] = useState(value);
   const onChangeRef = useRef(onChange);
   const minRef = useRef(min);
@@ -93,10 +84,6 @@ export function TimeSlider({
         const ratio = Math.max(0, Math.min(1, paddedX / trackW));
         const v = clamp(ratio);
 
-        LayoutAnimation.configureNext(
-          LayoutAnimation.create(200, "easeInEaseOut", "opacity"),
-        );
-
         setDisplayValue(v);
         onChangeRef.current(v);
       },
@@ -106,6 +93,7 @@ export function TimeSlider({
   const onLayout = (e: LayoutChangeEvent) => {
     containerWidth.current = e.nativeEvent.layout.width;
     setDisplayValue(value);
+    setReady(true);
   };
 
   const ratio = (displayValue - min) / (max - min);
@@ -140,7 +128,7 @@ export function TimeSlider({
             overflow: "hidden",
           }}
         >
-          {containerWidth.current > 0 && (
+          {ready && (
             <View
               style={{
                 height: "100%",
@@ -152,7 +140,7 @@ export function TimeSlider({
           )}
         </View>
 
-        {containerWidth.current > 0 && (
+        {ready && (
           <View
             pointerEvents="none"
             style={{

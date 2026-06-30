@@ -93,9 +93,7 @@ export function TimerDisplay({
           {formatTime(timeLeft)}
         </Text>
 
-        <Text
-          className="text-gray-400 text-xs tracking-[0.25em] mt-3 font-semibold"
-        >
+        <Text className="text-gray-400 text-xs tracking-[0.25em] mt-3 font-semibold">
           {getPhaseLabel(phase)}
         </Text>
       </View>
