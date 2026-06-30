@@ -63,10 +63,6 @@ export default function Home() {
     [db],
   );
 
-  const handlePlay = useCallback((id: string) => {
-    console.log("Play task", id);
-  }, []);
-
   const handleAddTask = useCallback(() => {
     setTaskModalVisible(true);
   }, []);
@@ -171,7 +167,6 @@ export default function Home() {
           tasks={filteredTasks}
           categories={categories}
           onToggleStatus={handleToggleStatus}
-          onPlay={handlePlay}
           onLongPress={handleLongPress}
         />
       </ScrollView>

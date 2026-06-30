@@ -11,7 +11,6 @@ interface TaskCardProps {
   task: Task;
   category?: Category;
   onToggleStatus: (id: string) => void;
-  onPlay: (id: string) => void;
   onLongPress: (task: Task) => void;
 }
 
@@ -19,7 +18,6 @@ export default function TaskCard({
   task,
   category,
   onToggleStatus,
-  onPlay,
   onLongPress,
 }: TaskCardProps) {
   const isCompleted = task.status === "completed";
@@ -29,7 +27,7 @@ export default function TaskCard({
       onLongPress={() => onLongPress(task)}
       delayLongPress={400}
     >
-      <View className="mb-4 flex-row items-center rounded-2xl bg-zinc-900 border border-zinc-800 p-4 shadow-sm">
+      <View className="mb-3 flex-row items-center rounded-2xl bg-zinc-900 border border-zinc-800 p-4">
         <TouchableOpacity
           onPress={() => onToggleStatus(task.id)}
           className="mr-4 items-center justify-center h-8 w-8"
@@ -61,13 +59,12 @@ export default function TaskCard({
           >
             {task.title}
           </Text>
-          <View className="flex-row items-center space-x-2">
+          <View className="flex-row items-center">
             <View className="flex-row items-center rounded-lg bg-[#E5A84D15] px-2 py-1 mr-2">
               <FontAwesome5
                 name="caret-up"
                 size={12}
                 color="#E5A84D"
-                className="mr-1"
               />
               <Text className="text-[#E5A84D] text-xs font-semibold ml-1">
                 Level {task.pyramid_level}
@@ -94,13 +91,6 @@ export default function TaskCard({
             )}
           </View>
         </View>
-
-        <TouchableOpacity
-          onPress={() => onPlay(task.id)}
-          className="ml-2 h-10 w-10 items-center justify-center rounded-full bg-zinc-800/80"
-        >
-          <Ionicons name="play" size={18} color="#00D4FF" />
-        </TouchableOpacity>
       </View>
     </Pressable>
   );

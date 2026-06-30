@@ -66,7 +66,7 @@ export function deleteCategory(db: SQLiteDatabase, id: string) {
 
 export function getTasksByDate(db: SQLiteDatabase, date: string): Task[] {
   return db.getAllSync<Task>(
-    "SELECT * FROM tasks WHERE target_date = ? ORDER BY status ASC, pyramid_level DESC",
+    "SELECT * FROM tasks WHERE target_date = ? ORDER BY rowid DESC",
     date,
   );
 }
