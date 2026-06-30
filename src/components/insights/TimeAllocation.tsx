@@ -27,7 +27,6 @@ const BG_CLASS: Record<string, string> = {
 
 export function TimeAllocation({ segments, total }: TimeAllocationProps) {
   let currentOffset = 0;
-  const gap = 2;
 
   return (
     <View className="bg-white/5 rounded-3xl p-5 mb-5 border border-white/5">
@@ -53,8 +52,7 @@ export function TimeAllocation({ segments, total }: TimeAllocationProps) {
             />
             <G rotation="-90" origin={`${SIZE / 2}, ${SIZE / 2}`}>
               {segments.map((item, index) => {
-                const segmentValue = Math.max(0, item.value - gap);
-                const segmentPct = total > 0 ? segmentValue / total : 0;
+                const segmentPct = total > 0 ? item.value / total : 0;
                 const strokeLength = segmentPct * CIRCUMFERENCE;
                 const strokeDasharray = `${strokeLength} ${CIRCUMFERENCE - strokeLength}`;
                 const strokeDashoffset =
@@ -72,7 +70,7 @@ export function TimeAllocation({ segments, total }: TimeAllocationProps) {
                     fill="none"
                     strokeDasharray={strokeDasharray}
                     strokeDashoffset={strokeDashoffset}
-                    strokeLinecap="round"
+                    strokeLinecap="butt"
                   />
                 );
               })}
@@ -99,7 +97,9 @@ export function TimeAllocation({ segments, total }: TimeAllocationProps) {
                 />
                 <Text className="text-gray-300 text-sm">{item.label}</Text>
               </View>
-              <Text className="text-gray-400 text-sm">{item.value}</Text>
+              <Text className="text-gray-400 text-sm">
+                {item.value} ({Math.round((item.value / (total || 1)) * 100)}%)
+              </Text>
             </View>
           ))}
         </View>
