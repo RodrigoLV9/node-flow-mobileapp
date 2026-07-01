@@ -62,7 +62,7 @@ export function AddTaskModal({
       setTitle("");
       setPyramidLevel(3);
       setTargetDate(defaultDate);
-      setCategoryId(categories[0]?.id ?? "");
+      setCategoryId("");
       setTimeout(() => inputRef.current?.focus(), 200);
     }
   }, [visible, defaultDate, categories]);

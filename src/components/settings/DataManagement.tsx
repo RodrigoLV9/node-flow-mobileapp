@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Paths, File } from "expo-file-system";
 import { type SQLiteDatabase } from "expo-sqlite";
 import { getCategories, getTasksByDateRange } from "../../db/operations";
+import { seedDefaults } from "../../db/schema";
 
 const DOWNLOADS_PATH = "/storage/emulated/0/Download/nodeflow-export.json";
 
@@ -71,6 +72,7 @@ export function DataManagement({ db }: DataManagementProps) {
             db.execSync(
               "DELETE FROM pomodoro_sessions; DELETE FROM tasks; DELETE FROM categories",
             );
+            seedDefaults(db);
             Alert.alert("Done", "History has been cleared.");
           },
         },
