@@ -1,9 +1,9 @@
 import { View, Text, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSQLiteContext } from "expo-sqlite";
 import { TimerSettings } from "../../components/settings/TimerSettings";
-import { SystemSettings } from "../../components/settings/SystemSettings";
+import { PomodoroPreferences } from "../../components/settings/PomodoroPreferences";
 import { DataManagement } from "../../components/settings/DataManagement";
 import { getPomodoroConfig, getSettings, setSetting } from "../../db/operations";
 
@@ -16,11 +16,20 @@ export default function Settings() {
   const [focusTime, setFocusTime] = useState(pomodoroConfig.focusTime);
   const [shortBreak, setShortBreak] = useState(pomodoroConfig.shortBreak);
   const [longBreak, setLongBreak] = useState(pomodoroConfig.longBreak);
-  const [forceDarkMode, setForceDarkMode] = useState(
-    (settings.theme ?? "dark") === "dark",
+  const [vibrate, setVibrate] = useState(
+    (settings.vibrate ?? "true") === "true",
   );
-  const [strictBlockMode, setStrictBlockMode] = useState(
-    (settings.strict_block_mode ?? "true") === "true",
+  const [autostartBreaks, setAutostartBreaks] = useState(
+    (settings.autostart_breaks ?? "true") === "true",
+  );
+  const [autostartPomodoros, setAutostartPomodoros] = useState(
+    (settings.autostart_pomodoros ?? "true") === "true",
+  );
+  const [showNotifications, setShowNotifications] = useState(
+    (settings.show_notifications ?? "false") === "true",
+  );
+  const [keepScreenAwake, setKeepScreenAwake] = useState(
+    (settings.keep_screen_awake ?? "true") === "true",
   );
 
   const handleFocusTimeChange = (value: number) => {
@@ -36,16 +45,6 @@ export default function Settings() {
   const handleLongBreakChange = (value: number) => {
     setLongBreak(value);
     setSetting(db, "long_break_minutes", String(value));
-  };
-
-  const handleForceDarkModeToggle = (value: boolean) => {
-    setForceDarkMode(value);
-    setSetting(db, "theme", value ? "dark" : "light");
-  };
-
-  const handleStrictBlockModeToggle = (value: boolean) => {
-    setStrictBlockMode(value);
-    setSetting(db, "strict_block_mode", String(value));
   };
 
   return (
@@ -67,11 +66,32 @@ export default function Settings() {
           onLongBreakChange={handleLongBreakChange}
         />
 
-        <SystemSettings
-          forceDarkMode={forceDarkMode}
-          strictBlockMode={strictBlockMode}
-          onForceDarkModeToggle={handleForceDarkModeToggle}
-          onStrictBlockModeToggle={handleStrictBlockModeToggle}
+        <PomodoroPreferences
+          vibrate={vibrate}
+          autostartBreaks={autostartBreaks}
+          autostartPomodoros={autostartPomodoros}
+          showNotifications={showNotifications}
+          keepScreenAwake={keepScreenAwake}
+          onVibrateToggle={(v) => {
+            setVibrate(v);
+            setSetting(db, "vibrate", String(v));
+          }}
+          onAutostartBreaksToggle={(v) => {
+            setAutostartBreaks(v);
+            setSetting(db, "autostart_breaks", String(v));
+          }}
+          onAutostartPomodorosToggle={(v) => {
+            setAutostartPomodoros(v);
+            setSetting(db, "autostart_pomodoros", String(v));
+          }}
+          onShowNotificationsToggle={(v) => {
+            setShowNotifications(v);
+            setSetting(db, "show_notifications", String(v));
+          }}
+          onKeepScreenAwakeToggle={(v) => {
+            setKeepScreenAwake(v);
+            setSetting(db, "keep_screen_awake", String(v));
+          }}
         />
 
         <DataManagement />

@@ -1,18 +1,35 @@
-import { View } from "react-native";
+import { View, Vibration } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useSQLiteContext } from "expo-sqlite";
+import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
 import { TimerHeader } from "../../components/pomodoro/TimerHeader";
 import { TimerDisplay } from "../../components/pomodoro/TimerDisplay";
 import { CycleIndicator } from "../../components/pomodoro/CycleIndicator";
+
+const Notifications = (() => {
+  try {
+    return require("expo-notifications");
+  } catch {
+    return {
+      setNotificationHandler: () => {},
+      requestPermissionsAsync: async () => ({}),
+      scheduleNotificationAsync: async () => {},
+    };
+  }
+})();
 import {
   buildPhases,
   getPhaseDuration,
   PomodoroPhase,
   PomodoroConfig,
-  FOCUS_SESSIONS_PER_CYCLE,
 } from "../../components/pomodoro/types";
-import { getPomodoroConfig, addPomodoroSession } from "../../db/operations";
+import { getPomodoroConfig, getSettings, addPomodoroSession } from "../../db/operations";
+
+function parseBool(v: string | undefined, fallback: boolean): boolean {
+  if (v === undefined) return fallback;
+  return v === "true";
+}
 
 export default function Timer() {
   const db = useSQLiteContext();
@@ -20,10 +37,37 @@ export default function Timer() {
   dbRef.current = db;
 
   const pomodoroConfig = getPomodoroConfig(db);
+  const settings = getSettings(db);
+
   const configRef = useRef(pomodoroConfig);
   configRef.current = pomodoroConfig;
   const phasesRef = useRef(buildPhases(pomodoroConfig));
   const phases = phasesRef.current;
+
+  const vibrateRef = useRef(parseBool(settings.vibrate, true));
+  const autostartBreaksRef = useRef(parseBool(settings.autostart_breaks, true));
+  const autostartPomodorosRef = useRef(parseBool(settings.autostart_pomodoros, true));
+  const keepAwakeRef = useRef(parseBool(settings.keep_screen_awake, true));
+  const notifyRef = useRef(parseBool(settings.show_notifications, false));
+
+  vibrateRef.current = parseBool(settings.vibrate, true);
+  autostartBreaksRef.current = parseBool(settings.autostart_breaks, true);
+  autostartPomodorosRef.current = parseBool(settings.autostart_pomodoros, true);
+  keepAwakeRef.current = parseBool(settings.keep_screen_awake, true);
+  notifyRef.current = parseBool(settings.show_notifications, false);
+
+  useEffect(() => {
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+        shouldShowBanner: true,
+        shouldShowList: true,
+      }),
+    });
+    Notifications.requestPermissionsAsync();
+  }, []);
 
   const [phaseIndex, setPhaseIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(
@@ -39,6 +83,21 @@ export default function Timer() {
 
   phaseIndexRef.current = phaseIndex;
   isRunningRef.current = isRunning;
+
+  useEffect(() => {
+    const phase = phases[phaseIndex];
+    if (isRunning && phase.type === "focus" && keepAwakeRef.current) {
+      activateKeepAwakeAsync();
+    } else {
+      deactivateKeepAwake();
+    }
+  }, [isRunning, phaseIndex, phases]);
+
+  useEffect(() => {
+    return () => {
+      deactivateKeepAwake();
+    };
+  }, []);
 
   const clearInterval_ = useCallback(() => {
     if (intervalRef.current !== null) {
@@ -71,21 +130,54 @@ export default function Timer() {
       clearInterval_();
 
       const completedPhase = phases[idx];
-      const phaseDurationMs = getPhaseDuration(completedPhase, configRef.current) * 1000;
-      const actualDuration = Math.round(
-        (accumulatedRef.current + (running ? now - startTsRef.current : 0)) / 60000,
-      );
 
-      if (completedPhase.type === "focus" && actualDuration > 0) {
-        addPomodoroSession(dbRef.current, {
-          type: "focus",
-          startTime: new Date(now - elapsed).toISOString(),
-          durationMinutes: actualDuration,
+      if (completedPhase.type === "focus") {
+        const actualDuration = Math.round(
+          (accumulatedRef.current + (running ? now - startTsRef.current : 0)) / 60000,
+        );
+        if (actualDuration > 0) {
+          addPomodoroSession(dbRef.current, {
+            type: "focus",
+            startTime: new Date(now - elapsed).toISOString(),
+            durationMinutes: actualDuration,
+          });
+        }
+      }
+
+      if (vibrateRef.current) {
+        Vibration.vibrate(500);
+      }
+
+      if (notifyRef.current) {
+        const nextIdxNotify = idx + 1;
+        const nextPhase = nextIdxNotify < phases.length ? phases[nextIdxNotify] : null;
+        let title = "Session complete!";
+        let body = "";
+
+        if (completedPhase.type === "focus") {
+          if (nextPhase?.type === "long_break") {
+            body = "Great work! Take a long break.";
+          } else {
+            body = "Focus session done. Time for a short break.";
+          }
+        } else if (completedPhase.type === "short_break") {
+          body = "Break over — ready for the next focus session.";
+        } else if (completedPhase.type === "long_break") {
+          body = "Long break finished. Let's get back to focus.";
+        }
+
+        Notifications.scheduleNotificationAsync({
+          content: { title, body },
+          trigger: null,
         });
       }
 
+      const shouldAutoStart = completedPhase.type === "focus"
+        ? autostartBreaksRef.current
+        : autostartPomodorosRef.current;
+
       const nextIdx = idx + 1;
-      if (nextIdx < phases.length) {
+      if (nextIdx < phases.length && shouldAutoStart) {
         phaseIndexRef.current = nextIdx;
         setPhaseIndex(nextIdx);
         setTimeLeft(getPhaseDuration(phases[nextIdx], configRef.current));
@@ -96,6 +188,11 @@ export default function Timer() {
         setIsRunning(false);
         isRunningRef.current = false;
         accumulatedRef.current = 0;
+        if (nextIdx < phases.length) {
+          phaseIndexRef.current = nextIdx;
+          setPhaseIndex(nextIdx);
+          setTimeLeft(getPhaseDuration(phases[nextIdx], configRef.current));
+        }
       }
     }
   };
@@ -147,7 +244,10 @@ export default function Timer() {
   }, [clearInterval_, phases, startTimer]);
 
   useEffect(() => {
-    return clearInterval_;
+    return () => {
+      clearInterval_();
+      deactivateKeepAwake();
+    };
   }, [clearInterval_]);
 
   const currentPhase = phases[phaseIndex];
