@@ -94,7 +94,7 @@ export default function Settings() {
           }}
         />
 
-        <DataManagement />
+        <DataManagement db={db} />
       </ScrollView>
     </SafeAreaView>
   );

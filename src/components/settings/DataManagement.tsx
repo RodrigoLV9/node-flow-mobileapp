@@ -1,9 +1,61 @@
-import { View, Text, TouchableOpacity, Alert } from "react-native";
+import { View, Text, TouchableOpacity, Alert, Platform, PermissionsAndroid } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { Paths, File } from "expo-file-system";
+import { type SQLiteDatabase } from "expo-sqlite";
+import { getCategories, getTasksByDateRange } from "../../db/operations";
 
-export function DataManagement() {
-  const handleExport = () => {
-    Alert.alert("Export Data", "Export all data as JSON file.");
+const DOWNLOADS_PATH = "/storage/emulated/0/Download/nodeflow-export.json";
+
+interface DataManagementProps {
+  db: SQLiteDatabase;
+}
+
+export function DataManagement({ db }: DataManagementProps) {
+  const handleExport = async () => {
+    try {
+      const categories = getCategories(db);
+      const tasks = getTasksByDateRange(db, "2000-01-01", "2099-12-31");
+
+      const json = JSON.stringify(
+        {
+          version: 1,
+          app: "NodeFlow",
+          exported_at: new Date().toISOString(),
+          categories,
+          tasks,
+        },
+        null,
+        2,
+      );
+
+      if (Platform.OS === "android") {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+          {
+            title: "Storage Permission",
+            message: "NodeFlow needs access to save exported data.",
+            buttonPositive: "Allow",
+          },
+        );
+
+        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+          Alert.alert("Permission denied", "Cannot save file without storage access.");
+          return;
+        }
+
+        const downloadFile = new File("file://" + DOWNLOADS_PATH);
+        downloadFile.create({ overwrite: true, intermediates: true });
+        downloadFile.write(json);
+        Alert.alert("Exported", "Saved to Downloads/nodeflow-export.json");
+      } else {
+        const file = new File(Paths.document, "nodeflow-export.json");
+        file.create({ overwrite: true, intermediates: true });
+        file.write(json);
+        Alert.alert("Exported", "Saved to Documents/nodeflow-export.json");
+      }
+    } catch (e) {
+      Alert.alert("Error", "Could not export data: " + String(e));
+    }
   };
 
   const handleClearHistory = () => {
@@ -15,7 +67,12 @@ export function DataManagement() {
         {
           text: "Clear",
           style: "destructive",
-          onPress: () => Alert.alert("Done", "History has been cleared."),
+          onPress: () => {
+            db.execSync(
+              "DELETE FROM pomodoro_sessions; DELETE FROM tasks; DELETE FROM categories",
+            );
+            Alert.alert("Done", "History has been cleared.");
+          },
         },
       ],
     );
@@ -43,7 +100,7 @@ export function DataManagement() {
         <View className="flex-1">
           <Text className="text-gray-300 text-sm">Export Data (JSON)</Text>
           <Text className="text-gray-600 text-xs mt-0.5">
-            Backup your tasks and sessions
+            Backup your tasks and categories
           </Text>
         </View>
         <Ionicons name="chevron-forward" size={16} color="#52525b" />

@@ -158,7 +158,7 @@ export default function Home() {
         }}
         showsVerticalScrollIndicator={false}
       >
-        <Header name="Usuario" selectedDate={selectedDate} />
+        <Header name="User" selectedDate={selectedDate} />
         <CalendarStrip
           selectedDate={selectedDate}
           onSelectDate={setSelectedDate}
