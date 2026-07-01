@@ -6,18 +6,7 @@ import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
 import { TimerHeader } from "../../components/pomodoro/TimerHeader";
 import { TimerDisplay } from "../../components/pomodoro/TimerDisplay";
 import { CycleIndicator } from "../../components/pomodoro/CycleIndicator";
-
-const Notifications = (() => {
-  try {
-    return require("expo-notifications");
-  } catch {
-    return {
-      setNotificationHandler: () => {},
-      requestPermissionsAsync: async () => ({}),
-      scheduleNotificationAsync: async () => {},
-    };
-  }
-})();
+import { Notifications } from "../../lib/notifications";
 import {
   buildPhases,
   getPhaseDuration,

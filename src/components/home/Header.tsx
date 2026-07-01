@@ -1,18 +1,14 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
-
-const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-];
+import { MONTHS } from "../../lib/dateUtils";
 
 interface HeaderProps {
   name: string;
   selectedDate: string;
+  onCalendarPress: () => void;
 }
 
-export default function Header({ name, selectedDate }: HeaderProps) {
+export default function Header({ name, selectedDate, onCalendarPress }: HeaderProps) {
   const d = new Date(selectedDate + "T00:00:00");
   const monthLabel = MONTHS[d.getMonth()];
   const yearLabel = String(d.getFullYear());
@@ -36,7 +32,7 @@ export default function Header({ name, selectedDate }: HeaderProps) {
       </View>
 
       <TouchableOpacity
-        onPress={() => router.push("/calendar")}
+        onPress={onCalendarPress}
         className="w-11 h-11 rounded-2xl bg-white/5 items-center justify-center ml-3"
         activeOpacity={0.6}
         style={{

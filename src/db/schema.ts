@@ -50,8 +50,6 @@ export function seedDefaults(db: SQLiteDatabase) {
     VALUES
       ('focus_time_minutes', '25'),
       ('short_break_minutes', '5'),
-      ('long_break_minutes', '15'),
-      ('theme', 'dark'),
-      ('strict_block_mode', 'true');
+      ('long_break_minutes', '15');
   `);
 }

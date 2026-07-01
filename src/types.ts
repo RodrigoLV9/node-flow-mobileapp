@@ -15,9 +15,4 @@ export interface Task {
   completed_at: string | null;
 }
 
-export interface DataPayload {
-  preferences: any;
-  categories: Category[];
-  tasks: Task[];
-  pomodoro_sessions: any[];
-}
+

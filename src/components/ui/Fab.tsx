@@ -8,7 +8,7 @@ interface FabProps {
 
 export default function Fab({ onPress }: FabProps) {
   return (
-    <View className="absolute bottom-[100px] right-6">
+    <View className="absolute bottom-[30px] right-6">
       <TouchableOpacity
         onPress={onPress}
         className="h-16 w-16 items-center justify-center rounded-full bg-[#00D4FF]"

@@ -1,5 +1,6 @@
 import { View, ScrollView } from "react-native";
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSQLiteContext } from "expo-sqlite";
 
@@ -10,7 +11,8 @@ import Fab from "../../components/ui/Fab";
 import { AddTaskModal } from "../../components/tasks/AddTaskModal";
 import { EditTaskModal } from "../../components/tasks/EditTaskModal";
 import { ManageCategoryModal } from "../../components/tasks/ManageCategoryModal";
-import { consumeCalendarDate } from "../../lib/shared";
+import { setCalendarDate, consumeCalendarDate } from "../../lib/shared";
+import { todayStr } from "../../lib/dateUtils";
 
 import {
   getCategories,
@@ -24,10 +26,6 @@ import {
   deleteCategory,
 } from "../../db/operations";
 import { Task, Category } from "../../types";
-
-function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 export default function Home() {
   const db = useSQLiteContext();
@@ -52,8 +50,6 @@ export default function Home() {
     setTasks(getTasksByDate(db, selectedDate));
     setCategories(getCategories(db));
   }, [db, selectedDate, refreshKey]);
-
-  const filteredTasks = useMemo(() => tasks, [tasks]);
 
   const handleToggleStatus = useCallback(
     (id: string) => {
@@ -149,6 +145,11 @@ export default function Home() {
     [db],
   );
 
+  const handleCalendarPress = useCallback(() => {
+    setCalendarDate(selectedDate);
+    router.push("/calendar");
+  }, [selectedDate]);
+
   return (
     <View className="flex-1 bg-[#121212]">
       <ScrollView
@@ -158,13 +159,13 @@ export default function Home() {
         }}
         showsVerticalScrollIndicator={false}
       >
-        <Header name="User" selectedDate={selectedDate} />
+        <Header name="User" selectedDate={selectedDate} onCalendarPress={handleCalendarPress} />
         <CalendarStrip
           selectedDate={selectedDate}
           onSelectDate={setSelectedDate}
         />
         <TaskList
-          tasks={filteredTasks}
+          tasks={tasks}
           categories={categories}
           onToggleStatus={handleToggleStatus}
           onLongPress={handleLongPress}

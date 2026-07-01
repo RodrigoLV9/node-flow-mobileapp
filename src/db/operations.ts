@@ -1,7 +1,7 @@
 import { type SQLiteDatabase } from "expo-sqlite";
 import { Category, Task } from "../types";
 
-export interface DbPomodoroSession {
+interface DbPomodoroSession {
   id: string;
   type: "focus" | "short_break" | "long_break";
   start_time: string;
@@ -9,19 +9,8 @@ export interface DbPomodoroSession {
   duration_minutes: number;
 }
 
-export interface DayStats {
-  date: string;
-  focus_minutes: number;
-  tasks_completed: number;
-  task_weight: number;
-}
-
 function genId(prefix: string): string {
   return prefix + Math.random().toString(36).slice(2, 10);
-}
-
-function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
 }
 
 export function getCategories(db: SQLiteDatabase): Category[] {
@@ -152,18 +141,6 @@ export function getTasksByDateRange(
   );
 }
 
-export function getCompletedTasksByDateRange(
-  db: SQLiteDatabase,
-  startDate: string,
-  endDate: string,
-): Task[] {
-  return db.getAllSync<Task>(
-    "SELECT * FROM tasks WHERE status = 'completed' AND target_date >= ? AND target_date <= ?",
-    startDate,
-    endDate,
-  );
-}
-
 export function getTasksByPyramidLevel(
   db: SQLiteDatabase,
   startDate: string,
@@ -173,22 +150,6 @@ export function getTasksByPyramidLevel(
     `SELECT pyramid_level, COUNT(*) as count
      FROM tasks
      WHERE target_date >= ? AND target_date <= ?
-     GROUP BY pyramid_level
-     ORDER BY pyramid_level`,
-    startDate,
-    endDate,
-  );
-}
-
-export function getCompletedTasksByPyramidLevel(
-  db: SQLiteDatabase,
-  startDate: string,
-  endDate: string,
-): { pyramid_level: number; count: number }[] {
-  return db.getAllSync<{ pyramid_level: number; count: number }>(
-    `SELECT pyramid_level, COUNT(*) as count
-     FROM tasks
-     WHERE status = 'completed' AND target_date >= ? AND target_date <= ?
      GROUP BY pyramid_level
      ORDER BY pyramid_level`,
     startDate,
@@ -224,85 +185,6 @@ export function addPomodoroSession(
     end_time: endTime,
     duration_minutes: data.durationMinutes,
   };
-}
-
-export function getPomodoroFocusByDateRange(
-  db: SQLiteDatabase,
-  startDate: string,
-  endDate: string,
-): number {
-  const row = db.getFirstSync<{ total: number | null }>(
-    `SELECT SUM(duration_minutes) as total
-     FROM pomodoro_sessions
-     WHERE type = 'focus' AND start_time >= ? AND start_time < ?`,
-    startDate,
-    endDate,
-  );
-  return row?.total ?? 0;
-}
-
-export function getPomodoroSessionsByDateRange(
-  db: SQLiteDatabase,
-  startDate: string,
-  endDate: string,
-): DbPomodoroSession[] {
-  return db.getAllSync<DbPomodoroSession>(
-    `SELECT * FROM pomodoro_sessions
-     WHERE start_time >= ? AND start_time < ?
-     ORDER BY start_time`,
-    startDate,
-    endDate,
-  );
-}
-
-export function getDailyStats(
-  db: SQLiteDatabase,
-  startDate: string,
-  endDate: string,
-): DayStats[] {
-  const rows = db.getAllSync<{
-    target_date: string;
-    focus_minutes: number | null;
-    tasks_completed: number | null;
-    task_weight: number | null;
-  }>(
-    `SELECT
-       t.target_date,
-       COALESCE(ps.focus_minutes, 0) as focus_minutes,
-       COALESCE(ts.tasks_completed, 0) as tasks_completed,
-       COALESCE(ts.task_weight, 0) as task_weight
-     FROM (SELECT DISTINCT target_date FROM tasks WHERE target_date >= ? AND target_date <= ?
-           UNION
-           SELECT DISTINCT date(start_time) FROM pomodoro_sessions WHERE start_time >= ? AND start_time < ?) t
-     LEFT JOIN (
-       SELECT date(start_time) as d, SUM(duration_minutes) as focus_minutes
-       FROM pomodoro_sessions WHERE type = 'focus' AND start_time >= ? AND start_time < ?
-       GROUP BY d
-     ) ps ON t.target_date = ps.d
-     LEFT JOIN (
-       SELECT target_date as d,
-              COUNT(*) as tasks_completed,
-              SUM(pyramid_level) as task_weight
-       FROM tasks WHERE status = 'completed' AND target_date >= ? AND target_date <= ?
-       GROUP BY target_date
-     ) ts ON t.target_date = ts.d
-     ORDER BY t.target_date`,
-    startDate,
-    endDate,
-    startDate,
-    endDate,
-    startDate,
-    endDate,
-    startDate,
-    endDate,
-  );
-
-  return rows.map((r) => ({
-    date: r.target_date,
-    focus_minutes: r.focus_minutes ?? 0,
-    tasks_completed: r.tasks_completed ?? 0,
-    task_weight: r.task_weight ?? 0,
-  }));
 }
 
 export function getSettings(db: SQLiteDatabase): Record<string, string> {

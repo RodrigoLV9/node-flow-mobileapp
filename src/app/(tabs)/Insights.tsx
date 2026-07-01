@@ -11,28 +11,9 @@ import {
   getDailyFocusMinutes,
   getTaskCompletionByDay,
   getHeatmapData,
-  getCompletedTasksByDateRange,
 } from "../../db/operations";
-
-function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function daysAgo(n: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  return d.toISOString().slice(0, 10);
-}
-
-function tomorrowStr(): string {
-  const d = new Date();
-  d.setDate(d.getDate() + 1);
-  return d.toISOString().slice(0, 10);
-}
-
-function daysAgoStr(n: number): string {
-  return daysAgo(n);
-}
+import { todayStr, tomorrowStr, daysAgo } from "../../lib/dateUtils";
+import { LEVEL_COLORS, LEVEL_LABELS } from "../../lib/constants";
 
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -40,22 +21,6 @@ function getDayLabel(dateStr: string): string {
   const d = new Date(dateStr + "T00:00:00");
   return DAY_NAMES[d.getDay()];
 }
-
-const LEVEL_COLORS: Record<number, string> = {
-  1: "#4ade80",
-  2: "#22d3ee",
-  3: "#facc15",
-  4: "#fb923c",
-  5: "#f43f5e",
-};
-
-const LEVEL_LABELS: Record<number, string> = {
-  1: "Level 1",
-  2: "Level 2",
-  3: "Level 3",
-  4: "Level 4",
-  5: "Level 5",
-};
 
 export default function Insights() {
   const db = useSQLiteContext();

@@ -1,12 +1,10 @@
 import { View, Text, TouchableOpacity } from "react-native";
+import { LEVEL_COLORS } from "../../lib/constants";
 
-const LEVELS = [
-  { level: 1, color: "#4ade80" },
-  { level: 2, color: "#a3e635" },
-  { level: 3, color: "#facc15" },
-  { level: 4, color: "#fb923c" },
-  { level: 5, color: "#f43f5e" },
-];
+const LEVELS = [1, 2, 3, 4, 5].map((level) => ({
+  level,
+  color: LEVEL_COLORS[level],
+}));
 
 interface PyramidLevelPickerProps {
   value: number;

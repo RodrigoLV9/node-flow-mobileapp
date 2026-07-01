@@ -1,15 +1,13 @@
-import { View, Text, TouchableOpacity, SafeAreaView } from "react-native";
-import { useState, useMemo, useEffect } from "react";
+import { View, Text, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useState, useMemo } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
-import { setCalendarDate } from "../lib/shared";
+import { setCalendarDate, getCalendarDate } from "../lib/shared";
 import { getTasksByDateRange } from "../db/operations";
+import { todayStr, MONTHS } from "../lib/dateUtils";
 
-const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-];
 const DAY_HEADERS = ["S", "M", "T", "W", "T", "F", "S"];
 
 function getDaysInMonth(year: number, month: number): number {
@@ -18,10 +16,6 @@ function getDaysInMonth(year: number, month: number): number {
 
 function getFirstDayOfMonth(year: number, month: number): number {
   return new Date(year, month, 1).getDay();
-}
-
-function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
 }
 
 function buildCalendarGrid(year: number, month: number) {
@@ -54,9 +48,13 @@ function fmtDateStr(year: number, month: number, day: number): string {
 
 export default function CalendarScreen() {
   const db = useSQLiteContext();
-  const today = new Date();
-  const [viewYear, setViewYear] = useState(today.getFullYear());
-  const [viewMonth, setViewMonth] = useState(today.getMonth());
+
+  const initialDate = getCalendarDate() ?? todayStr();
+  const initialDateParsed = new Date(initialDate + "T00:00:00");
+
+  const [viewYear, setViewYear] = useState(initialDateParsed.getFullYear());
+  const [viewMonth, setViewMonth] = useState(initialDateParsed.getMonth());
+  const [selectedDate, setSelectedDate] = useState(initialDate);
 
   const monthStart = fmtDateStr(viewYear, viewMonth, 1);
   const daysInMonth = getDaysInMonth(viewYear, viewMonth);
@@ -92,6 +90,7 @@ export default function CalendarScreen() {
 
   const handleSelectDay = (day: number) => {
     const dateStr = fmtDateStr(viewYear, viewMonth, day);
+    setSelectedDate(dateStr);
     setCalendarDate(dateStr);
     router.back();
   };
@@ -148,7 +147,9 @@ export default function CalendarScreen() {
 
               const dateStr = fmtDateStr(viewYear, viewMonth, day);
               const isToday = dateStr === currentDate;
+              const isSelected = dateStr === selectedDate;
               const hasTasks = tasksByDate.has(dateStr);
+              const isHighlighted = isSelected;
 
               return (
                 <TouchableOpacity
@@ -156,16 +157,20 @@ export default function CalendarScreen() {
                   onPress={() => handleSelectDay(day)}
                   className="flex-1 h-11 items-center justify-center rounded-xl"
                   style={{
-                    backgroundColor: isToday
+                    backgroundColor: isHighlighted
                       ? "rgba(34,211,238,0.15)"
                       : "transparent",
-                    borderWidth: isToday ? 1 : 0,
-                    borderColor: isToday ? "rgba(34,211,238,0.4)" : "transparent",
+                    borderWidth: isHighlighted || isToday ? 1 : 0,
+                    borderColor: isHighlighted
+                      ? "rgba(34,211,238,0.4)"
+                      : isToday
+                      ? "rgba(255,255,255,0.1)"
+                      : "transparent",
                   }}
                 >
                   <Text
                     className={`text-sm font-medium ${
-                      isToday ? "text-cyan-400" : "text-zinc-300"
+                      isHighlighted ? "text-cyan-400" : isToday ? "text-zinc-400" : "text-zinc-300"
                     }`}
                   >
                     {day}
